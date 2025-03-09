@@ -13,11 +13,12 @@ const SearchAndFilter = () => {
   };
 
   return (
-    <div className="flex mb-8 gap-4">
+    <div className="flex flex-col items-center md:flex-row mb-8 gap-4">
       <Input
         placeholder="Keyword search..."
         onChange={onSearch}
         value={searchText}
+        className="w-[320px] md:w-[180px]"
       />
       <FromDateSelection />
       <CategorySelect />

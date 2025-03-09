@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  app:
+    image: news-aggregator
+    build:
+      context: .
+      args:
+        VITE_NEWS_API_KEY: ${VITE_NEWS_API_KEY}
+        VITE_NYTIMES_API_KEY: ${VITE_NYTIMES_API_KEY}
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env

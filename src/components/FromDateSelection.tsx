@@ -10,7 +10,6 @@ import { useFilterContext } from "@/lib/hooks";
 
 const FromDateSelection = () => {
   const { selectedFromDate, handleChangeFromDate } = useFilterContext();
-  // const [date, setDate] = useState<Date>();
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -18,7 +17,7 @@ const FromDateSelection = () => {
         <Button
           variant={"outline"}
           className={cn(
-            "w-[280px] justify-start text-left font-normal relative dark",
+            "justify-start text-left font-normal relative dark w-[320px] md:w-[180px]",
             !selectedFromDate && "text-muted-foreground"
           )}
         >

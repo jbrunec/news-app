@@ -10,6 +10,7 @@ import {
 import { buildNyTimesQuery } from "./utils";
 
 const NEWS_API_URL = "https://newsapi.org/v2";
+const NY_TIMES_API_URL = "https://api.nytimes.com/svc/search/v2";
 
 async function fetchAllNews(
   page: number,
@@ -20,16 +21,24 @@ async function fetchAllNews(
 ): Promise<Article[]> {
   if (selectedSource) {
     if (selectedSource !== "ny-times") {
-      return selectedCategory
-        ? fetchNewsApiTopNews(page, selectedCategory, searchText)
-        : fetchNewsApiEverything(page, selectedSource, fromDate, searchText);
+      return executeNewsApiCallBasedOnCategory(
+        page,
+        selectedCategory,
+        selectedSource,
+        fromDate,
+        searchText
+      );
     } else {
       return fetchNYTimes(page, selectedCategory, fromDate, searchText);
     }
   } else {
-    const newsApiPromise = selectedCategory
-      ? fetchNewsApiTopNews(page, selectedCategory, searchText)
-      : fetchNewsApiEverything(page, selectedSource, fromDate, searchText);
+    const newsApiPromise = executeNewsApiCallBasedOnCategory(
+      page,
+      selectedCategory,
+      selectedSource,
+      fromDate,
+      searchText
+    );
     const [newsApiResults, nyTimesApiResults] = await Promise.all([
       newsApiPromise,
       fetchNYTimes(page, selectedCategory, fromDate, searchText),
@@ -44,6 +53,19 @@ async function fetchAllNews(
     return sortedArticles;
   }
 }
+
+async function executeNewsApiCallBasedOnCategory(
+  page: number,
+  selectedCategory: string,
+  selectedSource: string | null,
+  fromDate?: Date,
+  searchText?: string
+) {
+  return selectedCategory
+    ? fetchNewsApiTopNews(page, selectedCategory, searchText)
+    : fetchNewsApiEverything(page, selectedSource, fromDate, searchText);
+}
+
 export function newsQueryOptions(
   page: number,
   selectedCategory: string,
@@ -56,9 +78,9 @@ export function newsQueryOptions(
       "news",
       page,
       searchText,
-      fromDate,
       selectedCategory,
       selectedSource,
+      fromDate,
     ],
     queryFn: () =>
       fetchAllNews(
@@ -68,7 +90,8 @@ export function newsQueryOptions(
         fromDate,
         searchText
       ),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    gcTime: 0,
     retry: false,
   });
 }
@@ -92,7 +115,7 @@ async function fetchNewsApiEverything(
         to: fromDate ? addDays(fromDate, 1).toISOString() : "",
       },
       headers: {
-        "X-Api-Key": import.meta.env.VITE_NEWS_API_API_KEY,
+        "X-Api-Key": import.meta.env.VITE_NEWS_API_KEY,
       },
     }
   );
@@ -123,7 +146,7 @@ async function fetchNewsApiTopNews(
         country: "",
       },
       headers: {
-        "X-Api-Key": import.meta.env.VITE_NEWS_API_API_KEY,
+        "X-Api-Key": import.meta.env.VITE_NEWS_API_KEY,
       },
     }
   );
@@ -146,31 +169,31 @@ const fetchNYTimes = async (
   const beginDate = fromDate ? format(fromDate, "yyyyMMdd") : "";
   const endDate = fromDate ? format(addDays(fromDate, 1), "yyyyMMdd") : "";
 
-  const { data } = await axios.get(
-    `https://api.nytimes.com/svc/search/v2/articlesearch.json?`,
-    {
-      params: {
-        "api-key": import.meta.env.VITE_NYTIMES_API_KEY,
-        q: searchText,
-        page: page,
-        ...buildNyTimesQuery(selectedCategory, beginDate, endDate),
-        // begin_date: beginDate, // NYT expects YYYYMMDD format
-        // end_date: endDate,
-        // fq: category
-        //   ? `section_name:("${filters.category}")`
-        //   : "",
-      },
-    }
-  );
-  return data.response.docs.map((article: NyTimesArticle) => ({
-    title: article.headline.main,
-    description: article.abstract,
-    source: "The New York Times",
-    publishedAt: article.pub_date,
-    url: article.web_url,
-    imageUrl:
-      article.multimedia.length > 0
-        ? `https://www.nytimes.com/${article.multimedia[0].url}`
-        : "https://picsum.photos/168/168",
-  }));
+  try {
+    const { data } = await axios.get(
+      `${NY_TIMES_API_URL}/articlesearch.json?`,
+      {
+        params: {
+          "api-key": import.meta.env.VITE_NYTIMES_API_KEY,
+          q: searchText,
+          page: page,
+          ...buildNyTimesQuery(selectedCategory, beginDate, endDate),
+        },
+      }
+    );
+    return data.response.docs.map((article: NyTimesArticle) => ({
+      title: article.headline.main,
+      description: article.abstract,
+      source: "The New York Times",
+      publishedAt: article.pub_date,
+      url: article.web_url,
+      imageUrl:
+        article.multimedia.length > 0
+          ? `https://www.nytimes.com/${article.multimedia[0].url}`
+          : "https://picsum.photos/168/168",
+    }));
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
 };

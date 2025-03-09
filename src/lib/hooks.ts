@@ -50,7 +50,6 @@ const useQueryParam = (
       query.delete(key);
     }
 
-    // This check is necessary if using the hook with Gatsby
     if (typeof window !== "undefined") {
       const { protocol, pathname, host } = window.location;
       const newUrl = `${protocol}//${host}${pathname}?${query.toString()}`;

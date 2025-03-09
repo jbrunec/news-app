@@ -29,7 +29,7 @@ export default function FilterContextProvider({
     ""
   );
   const [sourceQueryParam, setSourceQueryParam] = useQueryParam("source", "");
-  const [searchText, setSearchText] = useState<string>(searchQueryParam);
+  const [searchText, setSearchText] = useState<string>(searchQueryParam || "");
   const [selectedFromDate, setSelectedFromDate] = useState<Date>();
   const [selectedCategory, setSelectedCategory] = useState(categoryQueryParam);
   const [selectedSource, setSelectedSource] = useState(sourceQueryParam);
@@ -45,20 +45,17 @@ export default function FilterContextProvider({
   const handleChangeCategory = (newValue: string) => {
     setCategoryQueryParam(newValue);
     setSelectedCategory(newValue);
+    setSourceQueryParam("");
+    setSelectedSource("");
   };
   const handleChangeSource = (newValue: string) => {
     setSourceQueryParam(newValue);
     setSelectedSource(newValue);
+    setCategoryQueryParam("");
+    setSelectedCategory("");
   };
 
   const debouncedSearchText = useDebounce(searchText, 400);
-  console.log(
-    "context state: ",
-    searchText,
-    selectedSource,
-    selectedCategory,
-    selectedFromDate
-  );
 
   return (
     <FilterContext.Provider

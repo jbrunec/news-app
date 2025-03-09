@@ -1,7 +1,7 @@
 import { newsQueryOptions } from "@/lib/API";
 import { useFilterContext } from "@/lib/hooks";
 import { Article } from "@/lib/types";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useEffect, useState } from "react";
 
 type NewsItemsContextProviderProps = {
@@ -13,6 +13,7 @@ type TNewsItemsContext = {
   error: Error | null;
   page: number;
   isLoading: boolean;
+  isFetching: boolean;
   setPage: React.Dispatch<React.SetStateAction<number>>;
 };
 
@@ -36,7 +37,7 @@ export default function NewsItemsContextProvider({
   const [page, setPage] = useState(1);
   const [articles, setArticles] = useState<Article[]>([]);
 
-  const { data, isLoading, error } = useSuspenseQuery(
+  const { data, isLoading, error, isFetching } = useQuery(
     newsQueryOptions(
       page,
       selectedCategory,
@@ -47,10 +48,11 @@ export default function NewsItemsContextProvider({
   );
 
   useEffect(() => {
-    setArticles((prev) => [...prev, ...data]);
+    if (data) {
+      setArticles((prev) => [...prev, ...data]);
+    }
   }, [data]);
 
-  console.log("NewsItemsContext state: ", articles, data);
   return (
     <NewsItemsContext.Provider
       value={{
@@ -59,6 +61,7 @@ export default function NewsItemsContextProvider({
         setPage,
         error,
         isLoading,
+        isFetching,
       }}
     >
       {children}

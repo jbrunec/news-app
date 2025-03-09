@@ -13,11 +13,10 @@ import {
 
 const CategorySelect = () => {
   const { selectedCategory, handleChangeCategory } = useFilterContext();
-  // const [key, setKey] = useState(+new Date());
 
   return (
-    <div className="rounded-md bg-slate-950">
-      <div className="relative w-[180px]">
+    <div className="rounded-md bg-slate-950 w-[320px] md:w-[180px]">
+      <div className="relative ">
         <Select
           onValueChange={handleChangeCategory}
           value={selectedCategory || ""}
