@@ -4,11 +4,12 @@ This is a news aggregator web application built with React, Vite, react-query, a
 
 ## Data used
 
-Data for the app is pulled from 3 sources (in case the source is not selected from the UI):
+Data for the app is pulled from 4 sources (in case the source is not selected from the UI):
 
 - The Washington Post
 - Google News
 - Fox News
+- NY Times
 
 ## Running the Project
 
